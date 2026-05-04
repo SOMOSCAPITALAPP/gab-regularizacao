@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocalData } from "@/hooks/use-local-data";
 import { netPotential } from "@/lib/calculations";
+import { publicSourcingCases } from "@/lib/seed";
 import {
   activityLabels,
   checklistLabels,
@@ -418,7 +419,7 @@ export function AppClient() {
             />
           ) : null}
           {view === "owners" ? <OwnersView t={t} locale={locale} owners={data.owners} properties={data.properties} setOwnerForm={setOwnerForm} setData={setData} /> : null}
-          {view === "sourcing" ? <SourcingView t={t} locale={locale} setView={setView} setPropertyForm={setPropertyForm} /> : null}
+          {view === "sourcing" ? <SourcingView t={t} locale={locale} data={data} setData={setData} setView={setView} setPropertyForm={setPropertyForm} /> : null}
           {view === "contracts" ? <ContractsView t={t} locale={locale} property={selectedProperty} owner={selectedOwner} properties={data.properties} setSelectedId={setSelectedId} /> : null}
         </div>
       </main>
@@ -785,14 +786,29 @@ function OwnersView({ t, locale, owners, properties, setOwnerForm, setData }: { 
 function SourcingView({
   t,
   locale,
+  data,
+  setData,
   setView,
   setPropertyForm,
 }: {
   t: Record<string, string>;
   locale: Locale;
+  data: { properties: Property[] };
+  setData: React.Dispatch<React.SetStateAction<any>>;
   setView: (view: View) => void;
   setPropertyForm: (property: Property) => void;
 }) {
+  const importableCases = publicSourcingCases.filter((item) => !data.properties.some((property) => property.id === item.id));
+
+  function importCases() {
+    setData((current: any) => {
+      const existingIds = new Set(current.properties.map((property: Property) => property.id));
+      const additions = publicSourcingCases.filter((property) => !existingIds.has(property.id));
+      return { ...current, properties: [...additions, ...current.properties] };
+    });
+    setView("properties");
+  }
+
   const hotSignals =
     locale === "pt-BR"
       ? [
@@ -843,7 +859,17 @@ function SourcingView({
           <Plus className="h-4 w-4" />
           {t.newProperty}
         </Button>
+        <Button variant="outline" onClick={importCases} disabled={importableCases.length === 0}>
+          <Save className="h-4 w-4" />
+          {t.importPublicCases} ({importableCases.length})
+        </Button>
       </section>
+
+      <Card>
+        <CardContent className="pt-5 text-sm text-muted-foreground">
+          {importableCases.length} {t.publicCasesReady}. {locale === "pt-BR" ? "Dados sem proprietarios ou CPFs: validar fonte, processo, restricao ambiental e autorizacao antes de contato." : "Donnees sans proprietaires ni CPF: valider source, procedure, restriction environnementale et autorisation avant contact."}
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">

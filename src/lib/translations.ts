@@ -101,6 +101,8 @@ export const dictionaries = {
     qualificationMatrix: "Matriz de qualificacao",
     keywordsToMonitor: "Palavras-chave para monitorar",
     outreachScript: "Abordagem comercial",
+    importPublicCases: "Importar casos publicos",
+    publicCasesReady: "casos publicos prontos para importar",
   },
   fr: {
     appName: "GAB Regularisation & Opportunites",
@@ -202,6 +204,8 @@ export const dictionaries = {
     qualificationMatrix: "Matrice de qualification",
     keywordsToMonitor: "Mots-cles a surveiller",
     outreachScript: "Approche commerciale",
+    importPublicCases: "Importer les cas publics",
+    publicCasesReady: "cas publics prets a importer",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
