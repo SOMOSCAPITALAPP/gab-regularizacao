@@ -1,5 +1,5 @@
 import { estimatedCommission, gabPriorityScore } from "@/lib/calculations";
-import type { AppData, ChecklistItem, Owner, Property } from "@/lib/types";
+import type { AppData, ChecklistItem, MarketOpportunity, Owner, Property } from "@/lib/types";
 import { checklistLabels } from "@/lib/translations";
 
 const now = new Date().toISOString();
@@ -334,6 +334,81 @@ export const publicSourcingCases: Property[] = [
   }),
 ];
 
+export const seedMarketOpportunities: MarketOpportunity[] = [
+  {
+    id: "market_zap_campinas_watch",
+    title: "Busca monitorada - casas abaixo do preco medio",
+    city: "Campinas",
+    neighborhood: "Cambui / Taquaral / Guanabara",
+    propertyType: "Casa",
+    sourceName: "ZAP Imoveis / VivaReal",
+    sourceUrl: "https://www.zapimoveis.com.br/venda/imoveis/sp+campinas/",
+    askingPrice: 0,
+    estimatedMarketValue: 0,
+    discountPercentage: 20,
+    signals: ["preco abaixo da media", "anuncio antigo", "aceita proposta"],
+    motivation: "Possivel urgencia comercial ou necessidade de liquidez.",
+    riskLevel: "medium",
+    status: "watching",
+    notes: "Monitorar anuncios com desconto superior a 20%, tempo de exposicao alto e texto indicando negociacao.",
+    createdAt: now,
+  },
+  {
+    id: "market_olx_urgente",
+    title: "Busca monitorada - venda urgente proprietario direto",
+    city: "Campinas",
+    neighborhood: "Campinas e regiao",
+    propertyType: "Residencial",
+    sourceName: "OLX",
+    sourceUrl: "https://www.olx.com.br/imoveis/venda/estado-sp/campinas-e-regiao",
+    askingPrice: 0,
+    estimatedMarketValue: 0,
+    discountPercentage: 25,
+    signals: ["urgente", "abaixou", "direto com proprietario", "aceito proposta"],
+    motivation: "Sinal de vendedor motivado; validar documentacao e motivo real antes de abordagem.",
+    riskLevel: "high",
+    status: "watching",
+    notes: "Nao coletar dados pessoais fora do contato voluntario do anunciante. Registrar URL, preco, bairro e sinais.",
+    createdAt: now,
+  },
+  {
+    id: "market_leiloes_campinas",
+    title: "Busca monitorada - leiloes judiciais e extrajudiciais",
+    city: "Campinas",
+    neighborhood: "Campinas e regiao",
+    propertyType: "Imovel em leilao",
+    sourceName: "Leiloeiros oficiais",
+    sourceUrl: "https://www.silveiraleiloes.com.br/",
+    askingPrice: 0,
+    estimatedMarketValue: 0,
+    discountPercentage: 30,
+    signals: ["judicial", "extrajudicial", "alienacao fiduciaria", "processo"],
+    motivation: "Desconto potencial associado a risco juridico, ocupacao, divida ou execucao.",
+    riskLevel: "high",
+    status: "watching",
+    notes: "Comparar avaliacao, lance minimo, matricula, ocupacao e onus. Fontes adicionais: RBF, Zalli, LEJE, Legis.",
+    createdAt: now,
+  },
+  {
+    id: "market_quintoandar_time_on_market",
+    title: "Busca monitorada - anuncios com baixa liquidez",
+    city: "Campinas",
+    neighborhood: "Barao Geraldo / Mansoes Santo Antonio",
+    propertyType: "Apartamento",
+    sourceName: "QuintoAndar / ImovelWeb",
+    sourceUrl: "https://www.quintoandar.com.br/comprar/imovel/campinas-sp-brasil",
+    askingPrice: 0,
+    estimatedMarketValue: 0,
+    discountPercentage: 15,
+    signals: ["preco reduzido", "anuncio recorrente", "condominio alto", "necessita reforma"],
+    motivation: "Desconto por baixa liquidez, reforma, condominio ou pressao de venda.",
+    riskLevel: "medium",
+    status: "watching",
+    notes: "Usar como funil de oportunidade comercial, nao como coleta automatizada de contatos.",
+    createdAt: now,
+  },
+];
+
 const seedChecklist: ChecklistItem[] = seedProperties.flatMap((item) =>
   checklistLabels.slice(0, 5).map((label, index) => ({
     id: `chk_${item.id}_${index}`,
@@ -373,4 +448,5 @@ export const seedData: AppData = {
       responsible: "Comercial GAB",
     },
   ],
+  marketOpportunities: seedMarketOpportunities,
 };

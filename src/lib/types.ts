@@ -89,10 +89,30 @@ export type Activity = {
   responsible: string;
 };
 
+export type MarketOpportunity = {
+  id: string;
+  title: string;
+  city: string;
+  neighborhood: string;
+  propertyType: string;
+  sourceName: string;
+  sourceUrl: string;
+  askingPrice: number;
+  estimatedMarketValue: number;
+  discountPercentage: number;
+  signals: string[];
+  motivation: string;
+  riskLevel: "low" | "medium" | "high";
+  status: "watching" | "qualified" | "contacted" | "discarded";
+  notes: string;
+  createdAt: string;
+};
+
 export type AppData = {
   properties: Property[];
   owners: Owner[];
   documents: DocumentRecord[];
   checklist: ChecklistItem[];
   activities: Activity[];
+  marketOpportunities: MarketOpportunity[];
 };

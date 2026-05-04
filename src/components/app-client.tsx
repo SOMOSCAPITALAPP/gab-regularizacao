@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LogOut,
   Plus,
+  Scale,
   Save,
   Search,
   Trash2,
@@ -41,10 +42,10 @@ import {
   statusLabels,
   urgencyLabels,
 } from "@/lib/translations";
-import type { Activity, ActivityType, ChecklistItem, CurrentStatus, DocumentRecord, Locale, Owner, Property, UrgencyLevel } from "@/lib/types";
+import type { Activity, ActivityType, ChecklistItem, CurrentStatus, DocumentRecord, Locale, MarketOpportunity, Owner, Property, UrgencyLevel } from "@/lib/types";
 import { formatCurrency, formatDate, uid } from "@/lib/utils";
 
-type View = "dashboard" | "properties" | "owners" | "sourcing" | "contracts";
+type View = "dashboard" | "properties" | "owners" | "sourcing" | "market" | "contracts";
 
 const statusOptions: CurrentStatus[] = [
   "newLead",
@@ -230,6 +231,11 @@ export function AppClient() {
   const [urgency, setUrgency] = useState("all");
   const [iptu, setIptu] = useState("all");
   const [type, setType] = useState("all");
+  const [marketCity, setMarketCity] = useState("all");
+  const [marketSource, setMarketSource] = useState("all");
+  const [marketRisk, setMarketRisk] = useState("all");
+  const [marketSignal, setMarketSignal] = useState("all");
+  const [minDiscount, setMinDiscount] = useState(15);
   const [selectedId, setSelectedId] = useState(data.properties[0]?.id ?? "");
   const [propertyForm, setPropertyForm] = useState<Property | null>(null);
   const [ownerForm, setOwnerForm] = useState<Owner | null>(null);
@@ -240,6 +246,18 @@ export function AppClient() {
 
   const cities = Array.from(new Set(data.properties.map((item) => item.city))).sort();
   const types = Array.from(new Set(data.properties.map((item) => item.propertyType))).sort();
+  const marketCities = Array.from(new Set(data.marketOpportunities.map((item) => item.city))).sort();
+  const marketSources = Array.from(new Set(data.marketOpportunities.map((item) => item.sourceName))).sort();
+  const marketSignals = Array.from(new Set(data.marketOpportunities.flatMap((item) => item.signals))).sort();
+  const filteredMarketOpportunities = data.marketOpportunities.filter((item) => {
+    return (
+      item.discountPercentage >= minDiscount &&
+      (marketCity === "all" || item.city === marketCity) &&
+      (marketSource === "all" || item.sourceName === marketSource) &&
+      (marketRisk === "all" || item.riskLevel === marketRisk) &&
+      (marketSignal === "all" || item.signals.includes(marketSignal))
+    );
+  });
 
   const filteredProperties = data.properties.filter((property) => {
     const owner = property.ownerId ? data.owners.find((item) => item.id === property.ownerId) : undefined;
@@ -350,6 +368,7 @@ export function AppClient() {
             <NavButton icon={Building2} label={t.properties} active={view === "properties"} onClick={() => setView("properties")} />
             <NavButton icon={UserRound} label={t.owners} active={view === "owners"} onClick={() => setView("owners")} />
             <NavButton icon={Search} label={t.sourcing} active={view === "sourcing"} onClick={() => setView("sourcing")} />
+            <NavButton icon={Scale} label={t.market} active={view === "market"} onClick={() => setView("market")} />
             <NavButton icon={FileText} label={t.contracts} active={view === "contracts"} onClick={() => setView("contracts")} />
           </nav>
           <div className="space-y-3 border-t p-4">
@@ -383,6 +402,7 @@ export function AppClient() {
             <MobileNav label={t.properties} active={view === "properties"} onClick={() => setView("properties")} />
             <MobileNav label={t.owners} active={view === "owners"} onClick={() => setView("owners")} />
             <MobileNav label={t.sourcing} active={view === "sourcing"} onClick={() => setView("sourcing")} />
+            <MobileNav label={t.market} active={view === "market"} onClick={() => setView("market")} />
             <MobileNav label={t.contracts} active={view === "contracts"} onClick={() => setView("contracts")} />
           </div>
         </header>
@@ -420,6 +440,26 @@ export function AppClient() {
           ) : null}
           {view === "owners" ? <OwnersView t={t} locale={locale} owners={data.owners} properties={data.properties} setOwnerForm={setOwnerForm} setData={setData} /> : null}
           {view === "sourcing" ? <SourcingView t={t} locale={locale} data={data} setData={setData} setView={setView} setPropertyForm={setPropertyForm} /> : null}
+          {view === "market" ? (
+            <MarketView
+              t={t}
+              locale={locale}
+              items={filteredMarketOpportunities}
+              cities={marketCities}
+              sources={marketSources}
+              signals={marketSignals}
+              city={marketCity}
+              setCity={setMarketCity}
+              source={marketSource}
+              setSource={setMarketSource}
+              risk={marketRisk}
+              setRisk={setMarketRisk}
+              signal={marketSignal}
+              setSignal={setMarketSignal}
+              minDiscount={minDiscount}
+              setMinDiscount={setMinDiscount}
+            />
+          ) : null}
           {view === "contracts" ? <ContractsView t={t} locale={locale} property={selectedProperty} owner={selectedOwner} properties={data.properties} setSelectedId={setSelectedId} /> : null}
         </div>
       </main>
@@ -959,6 +999,148 @@ function SourcingView({
           </CardContent>
         </Card>
       </section>
+    </div>
+  );
+}
+
+function MarketView({
+  t,
+  locale,
+  items,
+  cities,
+  sources,
+  signals,
+  city,
+  setCity,
+  source,
+  setSource,
+  risk,
+  setRisk,
+  signal,
+  setSignal,
+  minDiscount,
+  setMinDiscount,
+}: {
+  t: Record<string, string>;
+  locale: Locale;
+  items: MarketOpportunity[];
+  cities: string[];
+  sources: string[];
+  signals: string[];
+  city: string;
+  setCity: (value: string) => void;
+  source: string;
+  setSource: (value: string) => void;
+  risk: string;
+  setRisk: (value: string) => void;
+  signal: string;
+  setSignal: (value: string) => void;
+  minDiscount: number;
+  setMinDiscount: (value: number) => void;
+}) {
+  const personalDataText =
+    locale === "pt-BR"
+      ? "Coletar nome, telefone, WhatsApp ou CPF apenas com consentimento do anunciante, parceria formal, atendimento iniciado pelo proprietario ou base legal documentada. Evite dados sensiveis como obito/familia sem necessidade comercial clara."
+      : "Collecter nom, telephone, WhatsApp ou CPF uniquement avec consentement de l'annonceur, partenariat formel, demande initiee par le proprietaire ou base legale documentee. Eviter les donnees sensibles comme deces/famille sans necessite commerciale claire.";
+
+  const sourceDirectory = [
+    { name: "ZAP Imoveis", url: "https://www.zapimoveis.com.br/venda/imoveis/sp+campinas/" },
+    { name: "VivaReal", url: "https://www.vivareal.com.br/venda/sp/campinas/" },
+    { name: "OLX", url: "https://www.olx.com.br/imoveis/venda/estado-sp/campinas-e-regiao" },
+    { name: "QuintoAndar", url: "https://www.quintoandar.com.br/comprar/imovel/campinas-sp-brasil" },
+    { name: "ImovelWeb", url: "https://www.imovelweb.com.br/imoveis-venda-campinas-sp.html" },
+    { name: "Silveira Leiloes", url: "https://www.silveiraleiloes.com.br/" },
+    { name: "RBF Leiloes", url: "https://www.rbfleiloes.com.br/" },
+    { name: "LEJE", url: "https://www.leje.com.br/" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <section>
+        <h2 className="text-xl font-semibold tracking-normal">{t.marketTitle}</h2>
+        <p className="text-sm text-muted-foreground">{t.marketSubtitle}</p>
+      </section>
+
+      <Card>
+        <CardContent className="grid gap-3 pt-5 md:grid-cols-5">
+          <FilterSelect value={city} onValueChange={setCity} options={["all", ...cities]} label={t.city} />
+          <FilterSelect value={source} onValueChange={setSource} options={["all", ...sources]} label={t.sourceSite} />
+          <FilterSelect value={risk} onValueChange={setRisk} options={["all", "low", "medium", "high"]} label={t.riskLevel} />
+          <FilterSelect value={signal} onValueChange={setSignal} options={["all", ...signals]} label={t.signals} />
+          <Field label={`${t.minDiscount}: ${minDiscount}%`}>
+            <Input type="number" min={0} max={80} value={minDiscount} onChange={(event) => setMinDiscount(Number(event.target.value || 0))} />
+          </Field>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Card>
+          <CardHeader>
+            <CardTitle>{items.length} {t.market}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t.properties}</TableHead>
+                  <TableHead>{t.sourceSite}</TableHead>
+                  <TableHead>{t.minDiscount}</TableHead>
+                  <TableHead>{t.riskLevel}</TableHead>
+                  <TableHead>{t.signals}</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <strong>{item.title}</strong>
+                      <p className="text-xs text-muted-foreground">{item.neighborhood}, {item.city}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{item.motivation}</p>
+                    </TableCell>
+                    <TableCell>{item.sourceName}</TableCell>
+                    <TableCell><Badge variant={item.discountPercentage >= 25 ? "urgent" : "warning"}>{item.discountPercentage}%</Badge></TableCell>
+                    <TableCell><Badge variant={item.riskLevel === "high" ? "urgent" : "secondary"}>{item.riskLevel}</Badge></TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="flex flex-wrap gap-1">
+                        {item.signals.map((entry) => <Badge key={entry} variant="outline">{entry}</Badge>)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <a href={item.sourceUrl} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" />{t.access}</a>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <aside className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.personalDataPolicy}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm leading-6 text-muted-foreground">{personalDataText}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.sourceSite}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {sourceDirectory.map((entry) => (
+                <Button key={entry.name} asChild variant="outline" className="w-full justify-between">
+                  <a href={entry.url} target="_blank" rel="noreferrer">{entry.name}<ExternalLink className="h-4 w-4" /></a>
+                </Button>
+              ))}
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ const STORAGE_KEY = "gab-regularizacao-v1";
 function normalize(data: AppData): AppData {
   return {
     ...data,
+    marketOpportunities: data.marketOpportunities ?? seedData.marketOpportunities,
     properties: data.properties.map((property) => {
       const commission = estimatedCommission(property.estimatedValue, property.commissionPercentage);
       return {
