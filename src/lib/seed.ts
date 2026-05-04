@@ -425,7 +425,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Preco anunciado muito baixo para metragem; pode indicar urgencia, reforma, litigio, ocupacao ou inconsistencia documental.",
     riskLevel: "high",
     status: "watching",
-    notes: "Fonte VivaReal publica. Triagem GAB: R$ 2.376/m2. Validar comparaveis, matricula, estado fisico e motivo da precificacao.",
+    notes: "Fonte VivaReal publica. Triagem GAB: R$ 2.376/m2. Validar comparaveis, matricula, estado fisico e motivo da precificacao. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -443,7 +443,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Preco por metro baixo combinado com IPTU elevado pode indicar imovel travado, ampliacao nao averbada ou baixa liquidez.",
     riskLevel: "high",
     status: "watching",
-    notes: "Fonte VivaReal publica. R$ 2.233/m2; IPTU anunciado R$ 6.558. Validar se IPTU e anual/mensal conforme anuncio.",
+    notes: "Fonte VivaReal publica. R$ 2.233/m2; IPTU anunciado R$ 6.558. Validar se IPTU e anual/mensal conforme anuncio. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -461,7 +461,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Casa com metragem relevante e preco/m2 abaixo de zonas comparaveis; pode haver necessidade de reforma ou regularizacao.",
     riskLevel: "medium",
     status: "watching",
-    notes: "Fonte VivaReal publica. R$ 3.333/m2; sem informacao de IPTU no trecho publico.",
+    notes: "Fonte VivaReal publica. R$ 3.333/m2; sem informacao de IPTU no trecho publico. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -479,7 +479,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Imovel comercial com preco/m2 baixo; oportunidade para GAB se houver ajuste de uso, alvara ou regularizacao edilicia.",
     riskLevel: "high",
     status: "watching",
-    notes: "Fonte VivaReal publica, anunciante Mega Imob. R$ 2.177/m2; IPTU anunciado R$ 513.",
+    notes: "Fonte VivaReal publica, anunciante Mega Imob. R$ 2.177/m2; IPTU anunciado R$ 513. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -497,7 +497,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Configuracao com 8 quartos pode indicar adaptacao, renda, uso comercial informal ou imovel herdado.",
     riskLevel: "medium",
     status: "watching",
-    notes: "Fonte VivaReal publica. R$ 4.299/m2 em Jardim Guanabara; validar zoneamento, uso e documentacao.",
+    notes: "Fonte VivaReal publica. R$ 4.299/m2 em Jardim Guanabara; validar zoneamento, uso e documentacao. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -515,7 +515,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Preco/m2 competitivo e repeticao de anuncios podem indicar baixa liquidez ou margem de negociacao.",
     riskLevel: "medium",
     status: "watching",
-    notes: "Fonte VivaReal publica. R$ 4.268/m2; condominio R$ 540 e IPTU R$ 310.",
+    notes: "Fonte VivaReal publica. R$ 4.268/m2; condominio R$ 540 e IPTU R$ 310. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -533,7 +533,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Ticket baixo pode gerar giro rapido; validar se ha restricao documental, financiamento ou ocupacao.",
     riskLevel: "medium",
     status: "watching",
-    notes: "Fonte VivaReal publica. R$ 3.931 a R$ 4.222/m2; condominio R$ 375 e IPTU R$ 150.",
+    notes: "Fonte VivaReal publica. R$ 3.931 a R$ 4.222/m2; condominio R$ 375 e IPTU R$ 150. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
   {
@@ -551,7 +551,7 @@ export const vivaRealPilotOpportunities: MarketOpportunity[] = [
     motivation: "Area grande pode ter desconto por zoneamento, restricao ambiental, acesso, matricula ou viabilidade urbanistica.",
     riskLevel: "high",
     status: "watching",
-    notes: "Fonte VivaReal publica. R$ 315/m2; validar zoneamento, acesso, passivo ambiental e matricula.",
+    notes: "Fonte VivaReal publica. R$ 315/m2; validar zoneamento, acesso, passivo ambiental e matricula. Se VivaReal bloquear acesso direto, localizar pelo titulo via Google.",
     createdAt: now,
   },
 ];

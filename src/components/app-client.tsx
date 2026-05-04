@@ -175,6 +175,10 @@ const sourcingKeywords = [
   "averbacao de construcao",
 ];
 
+function searchUrl(query: string) {
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
+
 const emptyProperty: Property = {
   id: "",
   address: "",
@@ -1061,7 +1065,7 @@ function MarketView({
 
   const sourceDirectory = [
     { name: "ZAP Imoveis", url: "https://www.zapimoveis.com.br/venda/imoveis/sp+campinas/" },
-    { name: "VivaReal", url: "https://www.vivareal.com.br/venda/sp/campinas/" },
+    { name: "VivaReal", url: searchUrl("site:vivareal.com.br/venda Campinas imoveis venda VivaReal") },
     { name: "OLX", url: "https://www.olx.com.br/imoveis/venda/estado-sp/campinas-e-regiao" },
     { name: "QuintoAndar", url: "https://www.quintoandar.com.br/comprar/imovel/campinas-sp-brasil" },
     { name: "ImovelWeb", url: "https://www.imovelweb.com.br/imoveis-venda-campinas-sp.html" },
@@ -1136,7 +1140,13 @@ function MarketView({
                     </TableCell>
                     <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">
-                        <a href={item.sourceUrl} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" />{t.access}</a>
+                        <a
+                          href={item.sourceName === "VivaReal" ? searchUrl(`${item.title} ${item.neighborhood} VivaReal Campinas`) : item.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <ExternalLink className="h-4 w-4" />{t.access}
+                        </a>
                       </Button>
                     </TableCell>
                   </TableRow>
