@@ -7,6 +7,7 @@ import {
   BarChart3,
   Building2,
   ClipboardCheck,
+  ExternalLink,
   FileText,
   Globe2,
   Handshake,
@@ -42,7 +43,7 @@ import {
 import type { Activity, ActivityType, ChecklistItem, CurrentStatus, DocumentRecord, Locale, Owner, Property, UrgencyLevel } from "@/lib/types";
 import { formatCurrency, formatDate, uid } from "@/lib/utils";
 
-type View = "dashboard" | "properties" | "owners" | "contracts";
+type View = "dashboard" | "properties" | "owners" | "sourcing" | "contracts";
 
 const statusOptions: CurrentStatus[] = [
   "newLead",
@@ -57,6 +58,120 @@ const statusOptions: CurrentStatus[] = [
 ];
 const urgencyOptions: UrgencyLevel[] = ["low", "medium", "high", "urgent"];
 const activityOptions: ActivityType[] = ["call", "whatsapp", "meeting", "email", "documentRequest", "negotiation"];
+
+const sourcingSources = [
+  {
+    id: "reurb",
+    priority: "P1",
+    frequency: { pt: "Semanal", fr: "Hebdomadaire" },
+    url: "https://portal-adm.campinas.sp.gov.br/servico/consultar-o-portal-da-regularizacao-fundiaria-urbana-reurb",
+    pt: {
+      name: "Portal REURB Campinas",
+      signal: "Nucleos urbanos informais, fase de regularizacao, modalidade REURB e estimativa de domicilios.",
+      action: "Mapear nucleos por bairro, identificar associacoes e oferecer diagnostico tecnico-juridico.",
+    },
+    fr: {
+      name: "Portail REURB Campinas",
+      signal: "Noyaux urbains informels, phase de regularisation, modalite REURB et volume estime de logements.",
+      action: "Cartographier les quartiers, identifier les associations et proposer un diagnostic technique-juridique.",
+    },
+  },
+  {
+    id: "diario",
+    priority: "P1",
+    frequency: { pt: "2x por semana", fr: "2x par semaine" },
+    url: "https://campinas.sp.gov.br/diario-oficial",
+    pt: {
+      name: "Diario Oficial de Campinas",
+      signal: "Publicacoes sobre embargo, auto de infracao, REURB, aprovacao, multas e fiscalizacao.",
+      action: "Criar alertas por palavra-chave e registrar cada endereco com risco administrativo.",
+    },
+    fr: {
+      name: "Journal officiel de Campinas",
+      signal: "Publications sur embargos, infractions, REURB, approbations, amendes et fiscalisation.",
+      action: "Creer des alertes par mot-cle et enregistrer chaque adresse avec risque administratif.",
+    },
+  },
+  {
+    id: "urbanismo",
+    priority: "P1",
+    frequency: { pt: "Semanal", fr: "Hebdomadaire" },
+    url: "https://portal-adm.campinas.sp.gov.br/servico/recurso-intimacao-multa-embargo-fiscalizacao-de-obras",
+    pt: {
+      name: "Fiscalizacao de Obras e Urbanismo",
+      signal: "Obra sem alvara, embargo, multa, parcelamento irregular ou loteamento clandestino.",
+      action: "Qualificar urgencia, custo de regularizacao e possibilidade de mandato de intermediacao.",
+    },
+    fr: {
+      name: "Fiscalisation des travaux et urbanisme",
+      signal: "Construction sans permis, embargo, amende, morcellement irregulier ou lotissement clandestin.",
+      action: "Qualifier urgence, cout de regularisation et possibilite de mandat d'intermediation.",
+    },
+  },
+  {
+    id: "iptu",
+    priority: "P2",
+    frequency: { pt: "Sob demanda", fr: "Sur demande" },
+    url: "https://portal-adm.campinas.sp.gov.br/servico/certidao-negativa-do-imovel-iptu-e-taxas",
+    pt: {
+      name: "Certidoes IPTU e taxas",
+      signal: "Debito fiscal, certidao positiva, impedimento para venda, inventario ou financiamento.",
+      action: "Usar na qualificacao apos obter autorizacao do proprietario ou parceiro originador.",
+    },
+    fr: {
+      name: "Certificats IPTU et taxes",
+      signal: "Dette fiscale, certificat positif, blocage de vente, succession ou financement.",
+      action: "Utiliser en qualification apres autorisation du proprietaire ou partenaire apporteur.",
+    },
+  },
+  {
+    id: "cartorio",
+    priority: "P2",
+    frequency: { pt: "Sob demanda", fr: "Sur demande" },
+    url: "https://ridigital.org.br/",
+    pt: {
+      name: "RI Digital e cartorios",
+      signal: "Matricula desatualizada, onus, penhora, divergencia de area, transcricao antiga ou inventario.",
+      action: "Solicitar matricula atualizada quando o lead demonstrar interesse comercial real.",
+    },
+    fr: {
+      name: "RI Digital et registres",
+      signal: "Matricule obsolete, charges, saisie, divergence de surface, ancienne transcription ou succession.",
+      action: "Demander la matricule actualisee quand le lead montre un interet commercial reel.",
+    },
+  },
+  {
+    id: "network",
+    priority: "P1",
+    frequency: { pt: "Continuo", fr: "Continu" },
+    url: "https://www.google.com/search?q=imobiliarias+Campinas+regularizacao+imovel",
+    pt: {
+      name: "Rede local de originacao",
+      signal: "Corretores, advogados de inventario, sindicos, engenheiros, arquitetos e associacoes com casos travados.",
+      action: "Criar parceria com fee de indicacao e formulario padrao de triagem.",
+    },
+    fr: {
+      name: "Reseau local d'origination",
+      signal: "Agents, avocats succession, syndics, ingenieurs, architectes et associations avec dossiers bloques.",
+      action: "Creer un partenariat avec commission d'apport et formulaire standard de tri.",
+    },
+  },
+];
+
+const sourcingKeywords = [
+  "REURB",
+  "embargo",
+  "auto de infracao",
+  "loteamento clandestino",
+  "parcelamento irregular",
+  "obra sem alvara",
+  "regularizacao de construcao",
+  "IPTU debito",
+  "certidao positiva",
+  "usucapiao",
+  "inventario",
+  "averbacao de construcao",
+];
 
 const emptyProperty: Property = {
   id: "",
@@ -233,6 +348,7 @@ export function AppClient() {
             <NavButton icon={LayoutDashboard} label={t.dashboard} active={view === "dashboard"} onClick={() => setView("dashboard")} />
             <NavButton icon={Building2} label={t.properties} active={view === "properties"} onClick={() => setView("properties")} />
             <NavButton icon={UserRound} label={t.owners} active={view === "owners"} onClick={() => setView("owners")} />
+            <NavButton icon={Search} label={t.sourcing} active={view === "sourcing"} onClick={() => setView("sourcing")} />
             <NavButton icon={FileText} label={t.contracts} active={view === "contracts"} onClick={() => setView("contracts")} />
           </nav>
           <div className="space-y-3 border-t p-4">
@@ -265,6 +381,7 @@ export function AppClient() {
             <MobileNav label={t.dashboard} active={view === "dashboard"} onClick={() => setView("dashboard")} />
             <MobileNav label={t.properties} active={view === "properties"} onClick={() => setView("properties")} />
             <MobileNav label={t.owners} active={view === "owners"} onClick={() => setView("owners")} />
+            <MobileNav label={t.sourcing} active={view === "sourcing"} onClick={() => setView("sourcing")} />
             <MobileNav label={t.contracts} active={view === "contracts"} onClick={() => setView("contracts")} />
           </div>
         </header>
@@ -301,6 +418,7 @@ export function AppClient() {
             />
           ) : null}
           {view === "owners" ? <OwnersView t={t} locale={locale} owners={data.owners} properties={data.properties} setOwnerForm={setOwnerForm} setData={setData} /> : null}
+          {view === "sourcing" ? <SourcingView t={t} locale={locale} setView={setView} setPropertyForm={setPropertyForm} /> : null}
           {view === "contracts" ? <ContractsView t={t} locale={locale} property={selectedProperty} owner={selectedOwner} properties={data.properties} setSelectedId={setSelectedId} /> : null}
         </div>
       </main>
@@ -326,7 +444,7 @@ export function AppClient() {
   );
 }
 
-function NavButton({ icon: Icon, label, active, onClick }: { icon: typeof LayoutDashboard; label: string; active: boolean; onClick: () => void }) {
+function NavButton({ icon: Icon, label, active, onClick }: { icon: React.ComponentType<{ className?: string }>; label: string; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
       <Icon className="h-4 w-4" />
@@ -661,6 +779,161 @@ function OwnersView({ t, locale, owners, properties, setOwnerForm, setData }: { 
         </Table>
       </CardContent>
     </Card>
+  );
+}
+
+function SourcingView({
+  t,
+  locale,
+  setView,
+  setPropertyForm,
+}: {
+  t: Record<string, string>;
+  locale: Locale;
+  setView: (view: View) => void;
+  setPropertyForm: (property: Property) => void;
+}) {
+  const hotSignals =
+    locale === "pt-BR"
+      ? [
+          "Embargo, multa ou obra sem alvara",
+          "Proprietario quer vender, mas a documentacao trava o negocio",
+          "Debito IPTU relevante ou certidao positiva",
+          "Matricula desatualizada, area divergente ou construcao nao averbada",
+          "Inventario, usucapiao ou contrato de gaveta",
+        ]
+      : [
+          "Embargo, amende ou construction sans permis",
+          "Proprietaire veut vendre, mais les documents bloquent l'affaire",
+          "Dette IPTU importante ou certificat positif",
+          "Matricule obsolete, surface divergente ou construction non inscrite",
+          "Succession, usucapion ou contrat prive non registre",
+        ];
+
+  const routine =
+    locale === "pt-BR"
+      ? [
+          "Segunda: revisar Diario Oficial e registrar novos sinais com endereco, bairro e origem.",
+          "Terca: cruzar sinais com REURB, zoneamento, valor estimado e potencial de comissao.",
+          "Quarta: acionar parceiros locais e pedir indicacoes qualificadas.",
+          "Quinta: fazer primeiro contato com oferta de diagnostico e lista de documentos.",
+          "Sexta: atualizar status, score, proxima acao e prioridade comercial.",
+        ]
+      : [
+          "Lundi: verifier le Journal officiel et enregistrer les nouveaux signaux avec adresse, quartier et source.",
+          "Mardi: croiser les signaux avec REURB, zonage, valeur estimee et commission potentielle.",
+          "Mercredi: activer les partenaires locaux et demander des indications qualifiees.",
+          "Jeudi: premier contact avec offre de diagnostic et liste de documents.",
+          "Vendredi: mettre a jour statut, score, prochaine action et priorite commerciale.",
+        ];
+
+  const script =
+    locale === "pt-BR"
+      ? "Identificamos que este imovel pode ter uma pendencia documental, fiscal ou urbanistica que reduz valor e dificulta venda ou financiamento. A GAB pode fazer um diagnostico objetivo, estimar custo/prazo de regularizacao e, se fizer sentido, conduzir a regularizacao e a intermediacao comercial."
+      : "Nous avons identifie que ce bien peut avoir une irregularite documentaire, fiscale ou urbanistique qui reduit sa valeur et complique vente ou financement. GAB peut realiser un diagnostic objectif, estimer cout/delai de regularisation et, si pertinent, conduire la regularisation et l'intermediation commerciale.";
+
+  return (
+    <div className="space-y-6">
+      <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-normal">{t.sourcingTitle}</h2>
+          <p className="text-sm text-muted-foreground">{t.sourcingSubtitle}</p>
+        </div>
+        <Button onClick={() => { setPropertyForm({ ...emptyProperty, source: "Sourcing GAB" }); setView("properties"); }}>
+          <Plus className="h-4 w-4" />
+          {t.newProperty}
+        </Button>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>{t.sourceName}</CardTitle>
+            <CardDescription>{locale === "pt-BR" ? "Priorize fontes com problema visivel e proprietario motivado." : "Prioriser les sources avec probleme visible et proprietaire motive."}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t.sourceName}</TableHead>
+                  <TableHead>{t.leadSignal}</TableHead>
+                  <TableHead>{t.priority}</TableHead>
+                  <TableHead>{t.frequency}</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sourcingSources.map((source) => {
+                  const copy = locale === "pt-BR" ? source.pt : source.fr;
+                  return (
+                    <TableRow key={source.id}>
+                      <TableCell>
+                        <strong>{copy.name}</strong>
+                        <p className="mt-1 text-xs text-muted-foreground">{copy.action}</p>
+                      </TableCell>
+                      <TableCell className="max-w-md">{copy.signal}</TableCell>
+                      <TableCell><Badge variant={source.priority === "P1" ? "urgent" : "secondary"}>{source.priority}</Badge></TableCell>
+                      <TableCell>{locale === "pt-BR" ? source.frequency.pt : source.frequency.fr}</TableCell>
+                      <TableCell className="text-right">
+                        <Button asChild variant="outline" size="sm">
+                          <a href={source.url} target="_blank" rel="noreferrer">
+                            <ExternalLink className="h-4 w-4" />
+                            {t.access}
+                          </a>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.keywordsToMonitor}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              {sourcingKeywords.map((keyword) => <Badge key={keyword} variant="outline">{keyword}</Badge>)}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.qualificationMatrix}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {hotSignals.map((signal, index) => (
+                <div key={signal} className="flex gap-3 rounded-md border p-3">
+                  <Badge variant={index < 2 ? "urgent" : "secondary"}>{index < 2 ? "+25" : "+15"}</Badge>
+                  <span>{signal}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.weeklyRoutine}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {routine.map((item) => <p key={item} className="rounded-md border p-3 text-sm">{item}</p>)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.outreachScript}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="rounded-md bg-secondary p-4 text-sm leading-6">{script}</p>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
   );
 }
 
