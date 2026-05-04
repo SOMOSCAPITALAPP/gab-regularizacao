@@ -32,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocalData } from "@/hooks/use-local-data";
 import { netPotential } from "@/lib/calculations";
-import { publicSourcingCases } from "@/lib/seed";
+import { publicSourcingCases, vivaRealPilotOpportunities } from "@/lib/seed";
 import {
   activityLabels,
   checklistLabels,
@@ -458,6 +458,8 @@ export function AppClient() {
               setSignal={setMarketSignal}
               minDiscount={minDiscount}
               setMinDiscount={setMinDiscount}
+              data={data}
+              setData={setData}
             />
           ) : null}
           {view === "contracts" ? <ContractsView t={t} locale={locale} property={selectedProperty} owner={selectedOwner} properties={data.properties} setSelectedId={setSelectedId} /> : null}
@@ -1020,6 +1022,8 @@ function MarketView({
   setSignal,
   minDiscount,
   setMinDiscount,
+  data,
+  setData,
 }: {
   t: Record<string, string>;
   locale: Locale;
@@ -1037,7 +1041,19 @@ function MarketView({
   setSignal: (value: string) => void;
   minDiscount: number;
   setMinDiscount: (value: number) => void;
+  data: { marketOpportunities: MarketOpportunity[] };
+  setData: React.Dispatch<React.SetStateAction<any>>;
 }) {
+  const importableVivaReal = vivaRealPilotOpportunities.filter((item) => !data.marketOpportunities.some((existing) => existing.id === item.id));
+
+  function importVivaRealPilot() {
+    setData((current: any) => {
+      const existingIds = new Set(current.marketOpportunities.map((item: MarketOpportunity) => item.id));
+      const additions = vivaRealPilotOpportunities.filter((item) => !existingIds.has(item.id));
+      return { ...current, marketOpportunities: [...additions, ...current.marketOpportunities] };
+    });
+  }
+
   const personalDataText =
     locale === "pt-BR"
       ? "Coletar nome, telefone, WhatsApp ou CPF apenas com consentimento do anunciante, parceria formal, atendimento iniciado pelo proprietario ou base legal documentada. Evite dados sensiveis como obito/familia sem necessidade comercial clara."
@@ -1060,6 +1076,18 @@ function MarketView({
         <h2 className="text-xl font-semibold tracking-normal">{t.marketTitle}</h2>
         <p className="text-sm text-muted-foreground">{t.marketSubtitle}</p>
       </section>
+
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-5 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-muted-foreground">
+            {importableVivaReal.length} {t.vivaRealPilotReady}. {locale === "pt-BR" ? "Dados publicos de anuncio, sem contatos pessoais." : "Donnees publiques d'annonce, sans contacts personnels."}
+          </p>
+          <Button variant="outline" onClick={importVivaRealPilot} disabled={importableVivaReal.length === 0}>
+            <Save className="h-4 w-4" />
+            {t.importVivaRealPilot} ({importableVivaReal.length})
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="grid gap-3 pt-5 md:grid-cols-5">

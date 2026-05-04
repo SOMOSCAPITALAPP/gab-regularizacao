@@ -112,6 +112,8 @@ export const dictionaries = {
     motivation: "Motivacao",
     signals: "Sinais",
     personalDataPolicy: "Dados pessoais",
+    importVivaRealPilot: "Importar piloto VivaReal",
+    vivaRealPilotReady: "candidatos VivaReal prontos para importar",
   },
   fr: {
     appName: "GAB Regularisation & Opportunites",
@@ -224,6 +226,8 @@ export const dictionaries = {
     motivation: "Motivation",
     signals: "Signaux",
     personalDataPolicy: "Donnees personnelles",
+    importVivaRealPilot: "Importer pilote VivaReal",
+    vivaRealPilotReady: "candidats VivaReal prets a importer",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
